@@ -1,0 +1,139 @@
+openapi: 3.0.3
+info:
+  description: Task Tracker API
+  title: Swagger Task Tracker - OpenAPI 3.0
+  version: 1.0.0
+paths:
+  /user/register:
+    post:
+      operationId: register
+      summary: Register a new user
+      requestBody:
+        description: Credentionals
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        "201":
+          description: Successful operation
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+  /user/auth:
+    post:
+      operationId: loginUser
+      summary: Logs user into the system
+      requestBody:
+        description: Credentionals
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        "200":
+          description: Successful operation
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: session_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNjIxMzM5NTk5LCJpYXQiOjE2MjEzMzU5OTl9.GK1aF7xHR2uG1G6S5sL9G7_eZWjc3O2j4AA-vL9zE; Path=/; Max-Age=3600; Secure; HttpOnly
+              style: simple
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Invalid username/password supplied
+        "401":
+          description: Unauthorized
+  /user/update:
+    put:
+      operationId: updateMe
+      summary: Updates user info
+      security:
+        - cookieAuth: []
+      requestBody:
+        description: User
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "200":
+          description: Successful operation
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+components:
+  schemas:
+    Credentials:
+      type: object
+      properties:
+        username:
+          type: string
+          example: testuser
+          maxLength: 256
+          minLength: 1
+          pattern: "^[a-zA-Z0-9_]+$"
+        password:
+          type: string
+          description: Plain text password
+          example: testpassword
+          minLength: 8
+      required:
+        - username
+        - password
+      example:
+        username: testuser
+        password: testpassword
+    User:
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: John
+          maxLength: 256
+          minLength: 1
+        last_name:
+          type: string
+          example: Doe
+          maxLength: 256
+          minLength: 1
+        email:
+          type: string
+          example: john@example.com
+          format: email
+        phone_number:
+          type: string
+          example: "+1234567890"
+          maxLength: 64
+          minLength: 1
+        birthday:
+          type: string
+          format: date
+          example: 1990-01-01
+      required:
+        - first_name
+        - last_name
+        - email
+        - phone_number
+        - birthday
+      example:
+        first_name: John
+        last_name: Doe
+        email: john@example.com
+        phone_number: "+1234567890"
+        birthday: 1990-01-01
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session_token
