@@ -19,20 +19,10 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	var db *sql.DB
-	for {
-		db, err = sql.Open("postgres", "host=postgres port=5432 user=user password=password dbname=tasktracker sslmode=disable")
-		if err != nil {
-			log.Println("Failed to connect to database, retrying in 5 seconds...")
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		if err := db.Ping(); err != nil {
-			log.Println("Database not ready, retrying in 5 seconds...")
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		break
+	db, err := sql.Open("postgres", "host=postgres port=5432 user=user password=password dbname=tasktracker sslmode=disable")
+	if err != nil {
+		log.Println("Failed to connect to database.")
+		time.Sleep(5 * time.Second)
 	}
 	defer db.Close()
 
