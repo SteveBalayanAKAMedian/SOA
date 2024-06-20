@@ -61,16 +61,16 @@ services:
     environment:
       - DATABASE_URL=postgres://user:password@taskservice-postgres:5432/taskservice?sslmode=disable
 
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
-  #     PGADMIN_DEFAULT_PASSWORD: admin
-  #   ports:
-  #     - "80:80"
-  #   depends_on:
-  #     - postgres
-  #     - taskservice-postgres
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "80:80"
+    depends_on:
+      - postgres
+      - taskservice-postgres
 
 volumes:
   postgres_data:
