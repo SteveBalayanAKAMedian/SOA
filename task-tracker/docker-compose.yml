@@ -12,9 +12,25 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d
-
     healthcheck:
       test: ["CMD-SHELL", "pg_isready --username=user --dbname=tasktracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  taskservice-postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: taskservice
+    ports:
+      - "5433:5432"
+    volumes:
+      - taskservice_postgres_data:/var/lib/postgresql/data
+      - ./task-service/db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=user --dbname=taskservice"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,9 +42,36 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
+      - DATABASE_URL=postgres://user:password@postgres:5432/tasktracker?sslmode=disable
+      - TASK_SERVICE_GRPC_ADDRESS=task-service:50051
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+
+  task-service:
+    build:
+      context: ./task-service
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    depends_on:
+      taskservice-postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://user:password@taskservice-postgres:5432/taskservice?sslmode=disable
+
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - postgres
+  #     - taskservice-postgres
 
 volumes:
   postgres_data:
+  taskservice_postgres_data:
